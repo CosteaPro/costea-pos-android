@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Facturas pendientes · Costea POS Caja</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 24px; background: #1b1a19; color: #f2ede8;
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      h1 { font-size: 22px; margin: 0 0 4px; }
+      p.sub { margin: 0 0 18px; color: #a29a92; font-size: 13px; }
+      .barra { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+      button {
+        background: #e85d3a; color: #fff; border: 0; border-radius: 8px;
+        padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+      }
+      button.sec { background: #2b2927; color: #f2ede8; }
+      button:disabled { opacity: .5; cursor: default; }
+      .estado { font-size: 13px; color: #a29a92; margin-left: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #2e2b29; }
+      th { color: #a29a92; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; }
+      td.num { text-align: right; font-variant-numeric: tabular-nums; }
+      .chip { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+      .ok { background: rgba(60,170,110,.16); color: #6fdba0; }
+      .pend { background: rgba(232,164,58,.16); color: #f0bf6b; }
+      .mal { background: rgba(220,70,60,.16); color: #f28b83; }
+      .vacio { padding: 28px; text-align: center; color: #a29a92; }
+      .clave { font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: #a29a92; }
+    </style>
+  </head>
+  <body>
+    <h1>Facturas pendientes de envío al SRI</h1>
+    <p class="sub">Esta caja reintenta automáticamente cada minuto cuando hay internet. Los números ya están asignados y no se pierden.</p>
+
+    <div class="barra">
+      <button id="enviar">Enviar todo pendiente</button>
+      <button id="subir" class="sec">Subir al servidor central</button>
+      <button id="refrescar" class="sec">Actualizar</button>
+      <button class="sec" onclick="window.costeaCaja.abrirPos()">Volver al punto de venta</button>
+
+      <span class="estado" id="estado">—</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Estado</th><th>Número</th><th>Fecha</th><th>Cliente</th>
+          <th class="num">Total</th><th>Clave de acceso / mensaje</th>
+        </tr>
+      </thead>
+      <tbody id="filas"></tbody>
+    </table>
+    <div class="vacio" id="vacio" hidden>No hay comprobantes registrados en esta caja.</div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const dinero = (n) => "$ " + (Number(n) || 0).toFixed(2);
+      const fecha = (v) => {
+        try { return new Intl.DateTimeFormat("es-EC", { dateStyle: "short", timeStyle: "short", timeZone: "America/Guayaquil" }).format(new Date(v)); }
+        catch { return v || "—"; }
+      };
+
+      function chip(estado) {
+        if (estado === "autorizado") return '<span class="chip ok">✅ Autorizada</span>';
+        if (estado === "rechazado") return '<span class="chip mal">❌ Rechazada</span>';
+        return '<span class="chip pend">⏳ Pendiente</span>';
+      }
+
+      async function cargar() {
+        try {
+          const docs = await window.costeaCaja.comprobantes();
+          const facturas = docs.filter((d) => d.tipo === "factura");
+          $("filas").innerHTML = facturas
+            .map(
+              (d) => `<tr>
+                <td>${chip(d.estadoSri)}</td>
+                <td><strong>${d.docNumber || "—"}</strong></td>
+                <td>${fecha(d.fechaEmision)}</td>
+                <td>${(d.cliente && d.cliente.razonSocial) || "CONSUMIDOR FINAL"}</td>
+                <td class="num">${dinero(d.total)}</td>
+                <td class="clave">${(d.mensajesSri && d.mensajesSri.join(" · ")) || d.claveAcceso || ""}</td>
+              </tr>`,
+            )
+            .join("");
+          $("vacio").hidden = facturas.length > 0;
+          const pendientes = facturas.filter((d) => d.estadoSri !== "autorizado" && d.estadoSri !== "rechazado").length;
+          const sinSubir = docs.filter((d) => !d.sincronizado).length;
+          $("estado").textContent = `${pendientes} pendiente(s) del SRI · ${sinSubir} sin subir al servidor`;
+          $("enviar").disabled = pendientes === 0;
+        } catch (e) {
+          $("estado").textContent = String(e.message || e);
+        }
+      }
+
+      async function accion(boton, fn, etiqueta) {
+        const b = $(boton);
+        const texto = b.textContent;
+        b.disabled = true;
+        b.textContent = etiqueta;
+        try { await fn(); } catch (e) { $("estado").textContent = String(e.message || e); }
+        b.textContent = texto;
+        b.disabled = false;
+        cargar();
+      }
+
+      $("enviar").onclick = () => accion("enviar", () => window.costeaCaja.procesarPendientes(), "Enviando…");
+      $("subir").onclick = () => accion("subir", () => window.costeaCaja.subirAlServidor(), "Subiendo…");
+      $("refrescar").onclick = cargar;
+
+      cargar();
+      setInterval(cargar, 15000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+{
+  "name": "costea-pos-caja",
+  "productName": "Costea POS Caja",
+  "version": "1.9.0",
+  "description": "Programa de caja de Costea POS: factura electrónica SRI firmada en la propia computadora, con o sin internet.",
+  "main": "main.cjs",
+  "author": "Costea Pro",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "build:web": "cd .. && npm run build:desktop",
+    "predist": "npm run build:web",
+    "predist:portable": "npm run build:web",
+    "dist": "electron-builder --win nsis --x64",
+    "dist:portable": "electron-builder --win portable --x64"
+  },
+  "dependencies": {
+    "node-forge": "^1.3.1"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "resedit": "^2.0.3"
+  },
+  "build": {
+    "appId": "ec.costeapro.pos.caja",
+    "productName": "Costea POS Caja",
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!web-app/**"
+    ],
+    "extraResources": [
+      {
+        "from": "web-app",
+        "to": "web-app",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "afterPack": "build/incrustar-icono.cjs",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "artifactName": "CosteaPOS-Caja-${version}-setup.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Costea POS Caja",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Acerca de Costea POS Caja</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #1b1a19;
+        color: #f5f1ee;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        padding: 22px;
+      }
+      .tarjeta { max-width: 420px; text-align: center; }
+      img { width: 108px; height: 108px; border-radius: 22px; }
+      h1 { font-size: 20px; margin: 14px 0 2px; }
+      .version { color: #e85d3a; font-weight: 700; font-size: 14px; }
+      p { font-size: 13px; line-height: 1.55; color: #cbc2ba; }
+      ul { text-align: left; font-size: 13px; color: #cbc2ba; line-height: 1.6; padding-left: 18px; }
+      button {
+        margin-top: 16px; padding: 9px 20px; border: 0; border-radius: 9px;
+        background: #e85d3a; color: #fff; font-size: 14px; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tarjeta">
+      <img src="build/icon.png" alt="Costea POS" />
+      <h1>Costea POS Caja</h1>
+      <p class="version" id="version">Versión —</p>
+      <p>Facturación electrónica del SRI firmada en esta computadora, con o sin internet.</p>
+      <ul>
+        <li>Sincronización en tiempo real con el servidor central</li>
+        <li>Cuadre y cierre de caja con impresión térmica de 80 mm</li>
+        <li>Catálogo con fotografías descargadas al equipo</li>
+        <li>Claves de administrador validadas siempre en el servidor</li>
+        <li>Forma de pago Delivery</li>
+      </ul>
+      <button onclick="window.close()">Cerrar</button>
+    </div>
+    <script>
+      window.costeaCaja
+        ?.versionApp?.()
+        .then((v) => {
+          if (v) document.getElementById("version").textContent = "Versión " + v;
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>

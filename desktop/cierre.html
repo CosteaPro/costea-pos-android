@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Cierre de caja · Costea POS Caja</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #1b1a19; color: #f2ede8; font-family: "Segoe UI", system-ui, sans-serif; }
+      header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #2e2b29; background: #201e1d; }
+      .logo { width: 30px; height: 30px; border-radius: 7px; background: #e85d3a; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+      h1 { font-size: 16px; margin: 0; }
+      .der { margin-left: auto; display: flex; gap: 8px; }
+      button { font-family: inherit; cursor: pointer; border: 0; background: #2b2927; color: #f2ede8; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; }
+      button.pri { background: #e85d3a; color: #fff; }
+      button:disabled { opacity: .5; cursor: default; }
+      main { max-width: 900px; margin: 0 auto; padding: 18px 16px 40px; display: grid; gap: 14px; }
+      .tarjeta { background: #232120; border: 1px solid #2e2b29; border-radius: 12px; padding: 14px 16px; }
+      .tarjeta h2 { font-size: 13px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .5px; color: #a29a92; }
+      .fila { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; border-bottom: 1px solid #2e2b29; font-variant-numeric: tabular-nums; }
+      .fila:last-child { border-bottom: 0; }
+      .fila.total { font-size: 18px; font-weight: 800; color: #f0a07f; }
+      .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      input { background: #1b1a19; border: 1px solid #34302d; color: #f2ede8; border-radius: 8px; padding: 10px 12px; font-size: 14px; width: 100%; }
+      label { display: block; font-size: 12px; color: #a29a92; margin: 8px 0 4px; }
+      .dif.mal { color: #f28b83; } .dif.bien { color: #6fdba0; }
+      .aviso { border-radius: 8px; padding: 10px 12px; font-size: 13px; display: none; }
+      .aviso.ok { display: block; background: rgba(60,170,110,.14); color: #6fdba0; }
+      .aviso.mal { display: block; background: rgba(220,70,60,.14); color: #f28b83; }
+      table.cuadre { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+      table.cuadre th { text-align: right; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #a29a92; padding: 4px 6px; }
+      table.cuadre th:first-child { text-align: left; }
+      table.cuadre td { padding: 5px 6px; border-bottom: 1px solid #2e2b29; }
+      table.cuadre td.num { text-align: right; }
+      table.cuadre input { padding: 7px 9px; text-align: right; max-width: 130px; margin-left: auto; }
+      table.cuadre tfoot td { font-weight: 800; font-size: 16px; border-top: 2px solid #3a3532; border-bottom: 0; }
+      .acciones { display: flex; gap: 10px; }
+      .acciones button { flex: 1; padding: 14px; font-size: 15px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="logo">CP</span>
+      <h1>Cierre de caja definitivo</h1>
+      <div class="der">
+        <button id="btnVolver">Volver al POS</button>
+        <button id="btnRefrescar">Actualizar</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="aviso" id="aviso"></div>
+
+      <div class="tarjeta">
+        <h2>Período</h2>
+        <div class="fila"><span>Caja</span><span id="caja">—</span></div>
+        <div class="fila"><span>Fecha contable</span><span id="fecha">—</span></div>
+        <div class="fila"><span>Desde</span><span id="desde">—</span></div>
+        <div class="fila"><span>Hasta</span><span id="hasta">—</span></div>
+      </div>
+
+      <div class="dos">
+        <div class="tarjeta">
+          <h2>Documentos</h2>
+          <div class="fila"><span>Órdenes del día</span><span id="ordenes">0</span></div>
+          <div class="fila"><span>Facturas emitidas</span><span id="facturas">0</span></div>
+          <div class="fila"><span>Facturas anuladas</span><span id="anuladas">0</span></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Ventas por forma de pago</h2>
+          <div class="fila"><span>Efectivo</span><span id="p_efectivo">$0.00</span></div>
+          <div class="fila"><span>Tarjeta</span><span id="p_tarjeta">$0.00</span></div>
+          <div class="fila"><span>Transferencia</span><span id="p_transferencia">$0.00</span></div>
+          <div class="fila"><span>Apps / Delivery</span><span id="p_apps">$0.00</span></div>
+          <div class="fila"><span>Crédito</span><span id="p_credito">$0.00</span></div>
+          <div class="fila"><span>Otros</span><span id="p_otros">$0.00</span></div>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Totales</h2>
+        <div class="fila"><span>Subtotal sin IVA</span><span id="subtotal">$0.00</span></div>
+        <div class="fila"><span>IVA <span id="tarifa">15</span>%</span><span id="iva">$0.00</span></div>
+        <div class="fila total"><span>TOTAL DEL DÍA</span><span id="total">$0.00</span></div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Cuadre por medio de pago</h2>
+        <table class="cuadre">
+          <thead>
+            <tr><th>Medio de pago</th><th>Sistema</th><th>Contado</th><th>Diferencia</th></tr>
+          </thead>
+          <tbody id="cuerpoCuadre"></tbody>
+          <tfoot>
+            <tr>
+              <td>TOTAL</td>
+              <td class="num" id="t_sistema">$0.00</td>
+              <td class="num" id="t_contado">$0.00</td>
+              <td class="num dif" id="diferencia">$0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+        <label for="notas">Observaciones (opcional)</label>
+        <input id="notas" placeholder="Novedades del turno" />
+      </div>
+
+      <div class="acciones">
+        <button id="btnImprimir">Imprimir reporte</button>
+        <button class="pri" id="btnConfirmar">Confirmar cierre definitivo</button>
+      </div>
+    </main>
+
+    <script>
+      const caja = window.costeaCaja;
+      const $ = (id) => document.getElementById(id);
+      const money = (n) => "$" + (Math.round((Number(n) || 0) * 100) / 100).toFixed(2);
+      const fh = (iso) => (iso ? new Date(iso).toLocaleString("es-EC", { timeZone: "America/Guayaquil" }) : "—");
+      let resumen = null;
+      let cerrado = false;
+
+      function avisar(texto, malo) {
+        const a = $("aviso");
+        a.textContent = texto;
+        a.className = "aviso " + (malo ? "mal" : "ok");
+      }
+
+      const MEDIOS = [
+        ["efectivo", "Efectivo"],
+        ["tarjeta", "Tarjetas crédito / débito"],
+        ["transferencia", "Transferencias / pagos móviles"],
+        ["apps", "Apps / Delivery"],
+        ["credito", "Vales y recibos (crédito)"],
+        ["otros", "Otros medios"],
+      ];
+
+      /** Lo que el cajero declara tener, por medio de pago. */
+      function contado() {
+        const c = {};
+        for (const [k] of MEDIOS) c[k] = Number(($("c_" + k) || {}).value) || 0;
+        return c;
+      }
+
+      function pintarDiferencia() {
+        if (!resumen) return;
+        const c = contado();
+        let sis = 0;
+        let con = 0;
+        for (const [k] of MEDIOS) {
+          const sistema = Number(resumen.formasPago[k] || 0);
+          const d = Math.round((c[k] - sistema) * 100) / 100;
+          sis += sistema;
+          con += c[k];
+          const celda = $("d_" + k);
+          if (celda) {
+            celda.textContent = money(d);
+            celda.className = "num dif " + (d === 0 ? "bien" : "mal");
+          }
+        }
+        sis = Math.round(sis * 100) / 100;
+        con = Math.round(con * 100) / 100;
+        const total = Math.round((con - sis) * 100) / 100;
+        $("t_sistema").textContent = money(sis);
+        $("t_contado").textContent = money(con);
+        const e = $("diferencia");
+        e.textContent = (total < 0 ? "Faltante " : total > 0 ? "Sobrante " : "Cuadrado ") + money(Math.abs(total));
+        e.className = "num dif " + (total === 0 ? "bien" : "mal");
+      }
+
+      function filasCuadre(r, bloqueado) {
+        $("cuerpoCuadre").innerHTML = MEDIOS.map(([k, etiqueta]) => `
+          <tr>
+            <td>${etiqueta}</td>
+            <td class="num">${money(r.formasPago[k] || 0)}</td>
+            <td class="num"><input id="c_${k}" type="number" min="0" step="0.01" placeholder="0.00"
+              value="${bloqueado ? Number((r.contado || {})[k] || 0).toFixed(2) : ""}" ${bloqueado ? "disabled" : ""} /></td>
+            <td class="num dif" id="d_${k}">$0.00</td>
+          </tr>`).join("");
+        for (const [k] of MEDIOS) {
+          const campo = $("c_" + k);
+          if (campo) campo.addEventListener("input", pintarDiferencia);
+        }
+      }
+
+      function pintar(r) {
+        resumen = r;
+        $("caja").textContent = (r.caja.codigo || "—") + " (" + r.caja.establecimiento + "-" + r.caja.punto + ")";
+        $("fecha").textContent = r.fecha;
+        $("desde").textContent = fh(r.desde);
+        $("hasta").textContent = fh(r.hasta);
+        $("ordenes").textContent = r.ordenes;
+        $("facturas").textContent = r.facturas;
+        $("anuladas").textContent = r.anuladas;
+        for (const [k] of MEDIOS) $("p_" + k).textContent = money(r.formasPago[k] || 0);
+        $("subtotal").textContent = money(r.subtotal);
+        $("tarifa").textContent = r.tarifaIva;
+        $("iva").textContent = money(r.iva);
+        $("total").textContent = money(r.total);
+        filasCuadre(r, Boolean(r.cerrado));
+        pintarDiferencia();
+      }
+
+      async function cargar() {
+        try {
+          pintar(await caja.resumenCierre());
+        } catch (e) {
+          avisar(String(e.message || e), true);
+        }
+      }
+
+      function datosCierre() {
+        const c = contado();
+        const total = Object.values(c).reduce((a, b) => a + b, 0);
+        return {
+          ...resumen,
+          contado: c,
+          contadoTotal: Math.round(total * 100) / 100,
+          efectivoContado: c.efectivo,
+          diferencia: Math.round((total - resumen.total) * 100) / 100,
+          notas: $("notas").value.trim(),
+        };
+      }
+
+      async function imprimir() {
+        if (!resumen) return;
+        try {
+          await caja.imprimirCierre(datosCierre());
+          avisar("Reporte enviado a la impresora", false);
+        } catch (e) {
+          avisar(String(e.message || e), true);
+        }
+      }
+
+      async function confirmar() {
+        if (cerrado) return;
+        const clave = window.prompt("Clave de administrador o superadministrador para confirmar el cierre:");
+        if (!clave) return;
+        $("btnConfirmar").disabled = true;
+        $("btnConfirmar").textContent = "Confirmando…";
+        try {
+          const cierre = await caja.confirmarCierre({
+            contado: contado(),
+            efectivoContado: contado().efectivo,
+            notas: $("notas").value.trim(),
+            clave,
+          });
+          cerrado = true;
+          pintar(cierre);
+          $("notas").disabled = true;
+          $("btnConfirmar").textContent = "Cierre confirmado";
+          avisar(
+            "Cierre registrado con todos los medios de pago. El turno queda CERRADO: el número de orden vuelve a 0001 y la numeración de facturas continúa secuencial. Para vender otra vez debe abrir un turno nuevo con clave de administrador.",
+            false,
+          );
+          caja.imprimirCierre(cierre).catch(() => {});
+        } catch (e) {
+          $("btnConfirmar").disabled = false;
+          $("btnConfirmar").textContent = "Confirmar cierre definitivo";
+          avisar(String(e.message || e), true);
+        }
+      }
+
+      $("btnRefrescar").onclick = cargar;
+      $("btnVolver").onclick = () => (window.costeaCaja.abrirPos());
+      $("btnImprimir").onclick = imprimir;
+      $("btnConfirmar").onclick = confirmar;
+      cargar();
+    </script>
+  </body>
+</html>

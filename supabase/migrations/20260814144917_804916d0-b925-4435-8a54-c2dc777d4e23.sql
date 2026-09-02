@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS cajas_estab_punto_unico ON public.cajas (establishment, emission_point);

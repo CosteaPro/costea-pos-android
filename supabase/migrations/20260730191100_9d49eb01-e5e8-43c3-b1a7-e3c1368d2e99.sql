@@ -1,0 +1,2 @@
+ALTER TABLE public.company_settings ALTER COLUMN setup_completed SET DEFAULT true;
+UPDATE public.company_settings SET operation_mode = 'restaurante', setup_completed = true WHERE setup_completed = false OR operation_mode IS NULL;

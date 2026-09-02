@@ -1,0 +1,2 @@
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS xml_authorized text;
+COMMENT ON COLUMN public.orders.xml_authorized IS 'Comprobante XML tal como lo devuelve autorizado el SRI. Fuente oficial del RIDE.';

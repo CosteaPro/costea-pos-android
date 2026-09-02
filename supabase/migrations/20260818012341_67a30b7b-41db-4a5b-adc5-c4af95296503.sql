@@ -1,0 +1,2 @@
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS order_label text;
+COMMENT ON COLUMN public.orders.order_label IS 'Nombre o etiqueta editable del pedido, visible en todas las cajas e impresa en comanda/ticket.';

@@ -1,0 +1,1 @@
+ALTER TABLE public.cajas ADD COLUMN IF NOT EXISTS tipo_local text NOT NULL DEFAULT 'restaurante';

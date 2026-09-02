@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Cuadre de caja · Costea POS Caja</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #1b1a19; color: #f2ede8; font-family: "Segoe UI", system-ui, sans-serif; }
+      header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #2e2b29; background: #201e1d; }
+      .logo { width: 30px; height: 30px; border-radius: 7px; background: #e85d3a; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+      h1 { font-size: 16px; margin: 0; }
+      .der { margin-left: auto; display: flex; gap: 8px; }
+      button { font-family: inherit; cursor: pointer; border: 0; background: #2b2927; color: #f2ede8; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; }
+      button.pri { background: #e85d3a; color: #fff; }
+      main { max-width: 900px; margin: 0 auto; padding: 18px 16px 40px; display: grid; gap: 14px; }
+      .tarjeta { background: #232120; border: 1px solid #2e2b29; border-radius: 12px; padding: 14px 16px; }
+      .tarjeta h2 { font-size: 13px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .5px; color: #a29a92; }
+      .fila { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; border-bottom: 1px solid #2e2b29; font-variant-numeric: tabular-nums; }
+      .fila:last-child { border-bottom: 0; }
+      .fila.total { font-size: 18px; font-weight: 800; color: #f0a07f; }
+      .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      input { background: #1b1a19; border: 1px solid #34302d; color: #f2ede8; border-radius: 8px; padding: 10px 12px; font-size: 14px; width: 100%; }
+      label { display: block; font-size: 12px; color: #a29a92; margin: 8px 0 4px; }
+      .dif.mal { color: #f28b83; } .dif.bien { color: #6fdba0; }
+      .aviso { border-radius: 8px; padding: 10px 12px; font-size: 13px; display: none; }
+      .aviso.ok { display: block; background: rgba(60,170,110,.14); color: #6fdba0; }
+      .aviso.mal { display: block; background: rgba(220,70,60,.14); color: #f28b83; }
+      .nota { font-size: 12px; color: #a29a92; }
+      .acciones { display: flex; gap: 10px; }
+      .acciones button { flex: 1; padding: 14px; font-size: 15px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="logo">CP</span>
+      <h1>Cuadre de caja</h1>
+      <div class="der">
+        <button id="btnVolver">Volver al POS</button>
+        <button id="btnRefrescar">Actualizar</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="aviso" id="aviso"></div>
+      <p class="nota">
+        El cuadre solo compara el sistema con el dinero físico. No cierra el turno, no reinicia
+        números de orden ni de factura, y puede repetirse las veces que haga falta.
+      </p>
+
+      <div class="tarjeta">
+        <h2>Período</h2>
+        <div class="fila"><span>Caja</span><span id="caja">—</span></div>
+        <div class="fila"><span>Fecha contable</span><span id="fecha">—</span></div>
+        <div class="fila"><span>Desde</span><span id="desde">—</span></div>
+        <div class="fila"><span>Hasta</span><span id="hasta">—</span></div>
+      </div>
+
+      <div class="dos">
+        <div class="tarjeta">
+          <h2>Documentos</h2>
+          <div class="fila"><span>Órdenes del período</span><span id="ordenes">0</span></div>
+          <div class="fila"><span>Facturas emitidas</span><span id="facturas">0</span></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Ventas por forma de pago</h2>
+          <div class="fila"><span>Efectivo</span><span id="p_efectivo">$0.00</span></div>
+          <div class="fila"><span>Tarjeta</span><span id="p_tarjeta">$0.00</span></div>
+          <div class="fila"><span>Transferencia</span><span id="p_transferencia">$0.00</span></div>
+          <div class="fila"><span>Apps / Delivery</span><span id="p_apps">$0.00</span></div>
+          <div class="fila"><span>Crédito</span><span id="p_credito">$0.00</span></div>
+          <div class="fila"><span>Otros</span><span id="p_otros">$0.00</span></div>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Totales</h2>
+        <div class="fila"><span>Subtotal sin IVA</span><span id="subtotal">$0.00</span></div>
+        <div class="fila"><span>IVA <span id="tarifa">15</span>%</span><span id="iva">$0.00</span></div>
+        <div class="fila total"><span>TOTAL DEL PERÍODO</span><span id="total">$0.00</span></div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Verificación de efectivo</h2>
+        <div class="fila"><span>Efectivo esperado por el sistema</span><span id="esperado">$0.00</span></div>
+        <label for="contado">Efectivo contado ($)</label>
+        <input id="contado" type="number" min="0" step="0.01" placeholder="0.00" />
+        <label for="notas">Observaciones (opcional)</label>
+        <input id="notas" placeholder="Novedades del turno" />
+        <div class="fila total"><span>Diferencia</span><span id="diferencia" class="dif">$0.00</span></div>
+      </div>
+
+      <div class="acciones">
+        <button class="pri" id="btnImprimir">Imprimir cuadre</button>
+        <button id="btnCerrarVentana">Cerrar</button>
+      </div>
+    </main>
+
+    <script>
+      const caja = window.costeaCaja;
+      const $ = (id) => document.getElementById(id);
+      const money = (n) => "$" + (Math.round((Number(n) || 0) * 100) / 100).toFixed(2);
+      const fh = (iso) => (iso ? new Date(iso).toLocaleString("es-EC", { timeZone: "America/Guayaquil" }) : "—");
+      let resumen = null;
+
+      function avisar(texto, malo) {
+        const a = $("aviso");
+        a.textContent = texto;
+        a.className = "aviso " + (malo ? "mal" : "ok");
+      }
+
+      function pintarDiferencia() {
+        const esperado = Number(resumen ? resumen.efectivoEsperado : 0) || 0;
+        const contado = Number($("contado").value) || 0;
+        const d = Math.round((contado - esperado) * 100) / 100;
+        const e = $("diferencia");
+        e.textContent = (d < 0 ? "Faltante " : d > 0 ? "Sobrante " : "") + money(Math.abs(d));
+        e.className = "dif " + (d === 0 ? "bien" : "mal");
+      }
+
+      function pintar(r) {
+        resumen = r;
+        $("caja").textContent = (r.caja.codigo || "—") + " (" + r.caja.establecimiento + "-" + r.caja.punto + ")";
+        $("fecha").textContent = r.fecha;
+        $("desde").textContent = fh(r.desde);
+        $("hasta").textContent = fh(r.hasta);
+        $("ordenes").textContent = r.ordenes;
+        $("facturas").textContent = r.facturas;
+        for (const k of ["efectivo", "tarjeta", "transferencia", "apps", "credito", "otros"]) {
+          $("p_" + k).textContent = money(r.formasPago[k] || 0);
+        }
+        $("subtotal").textContent = money(r.subtotal);
+        $("tarifa").textContent = r.tarifaIva;
+        $("iva").textContent = money(r.iva);
+        $("total").textContent = money(r.total);
+        $("esperado").textContent = money(r.efectivoEsperado);
+        pintarDiferencia();
+      }
+
+      async function cargar() {
+        try {
+          pintar(await caja.resumenCierre());
+        } catch (e) {
+          avisar(String(e.message || e), true);
+        }
+      }
+
+      async function imprimir() {
+        if (!resumen) return;
+        const contado = Number($("contado").value) || 0;
+        try {
+          await caja.imprimirCuadre({
+            ...resumen,
+            efectivoContado: contado,
+            diferencia: Math.round((contado - resumen.efectivoEsperado) * 100) / 100,
+            notas: $("notas").value.trim(),
+          });
+          avisar("Cuadre enviado a la impresora. El turno sigue abierto.", false);
+        } catch (e) {
+          avisar(String(e.message || e), true);
+        }
+      }
+
+      $("contado").addEventListener("input", pintarDiferencia);
+      $("btnRefrescar").onclick = cargar;
+      $("btnVolver").onclick = () => (window.costeaCaja.abrirPos());
+      $("btnCerrarVentana").onclick = () => (window.costeaCaja.abrirPos());
+      $("btnImprimir").onclick = imprimir;
+      cargar();
+    </script>
+  </body>
+</html>

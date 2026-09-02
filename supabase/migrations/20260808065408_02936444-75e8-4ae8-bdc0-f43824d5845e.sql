@@ -1,0 +1,2 @@
+CREATE POLICY "Personal consulta recetas" ON public.recipes FOR SELECT TO authenticated USING (private.is_staff(auth.uid()));
+CREATE POLICY "Personal consulta ingredientes" ON public.recipe_items FOR SELECT TO authenticated USING (private.is_staff(auth.uid()));

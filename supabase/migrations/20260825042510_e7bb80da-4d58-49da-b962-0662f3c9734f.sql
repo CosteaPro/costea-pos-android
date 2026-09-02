@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.repropagate_item_cost(uuid) FROM authenticated;

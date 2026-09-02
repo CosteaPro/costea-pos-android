@@ -1,0 +1,2 @@
+ALTER TABLE public.recipe_items DROP CONSTRAINT IF EXISTS recipe_items_source_check;
+ALTER TABLE public.recipe_items ADD CONSTRAINT recipe_items_source_check CHECK (source_type = ANY (ARRAY['item'::text, 'subreceta'::text, 'receta'::text]));

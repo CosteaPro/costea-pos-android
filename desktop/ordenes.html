@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Órdenes de venta · Costea POS Caja</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 24px; background: #1b1a19; color: #f2ede8;
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      h1 { font-size: 22px; margin: 0 0 4px; }
+      p.sub { margin: 0 0 18px; color: #a29a92; font-size: 13px; }
+      .barra { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+      button {
+        background: #e85d3a; color: #fff; border: 0; border-radius: 8px;
+        padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+      }
+      button.sec { background: #2b2927; color: #f2ede8; }
+      .estado { font-size: 13px; color: #a29a92; margin-left: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #2e2b29; }
+      th { color: #a29a92; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; }
+      td.num { text-align: right; font-variant-numeric: tabular-nums; }
+      tfoot tr.info td { font-weight: 600; color: #a29a92; font-size: 13px; border-top: 1px solid #3a3532; }
+      tfoot td { font-weight: 800; font-size: 15px; border-top: 2px solid #3a3532; }
+      .chip { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+      .ok { background: rgba(60,170,110,.16); color: #6fdba0; }
+      .pend { background: rgba(232,164,58,.16); color: #f0bf6b; }
+      .vacio { padding: 28px; text-align: center; color: #a29a92; }
+      .anu { background: rgba(220,70,70,.18); color: #ff8f8f; }
+      tr.anulada td { text-decoration: line-through; opacity: .65; }
+      button.mini { padding: 6px 10px; font-size: 12px; background: #7a2020; }
+      dialog { background: #23211f; color: #f2ede8; border: 1px solid #3a3532; border-radius: 12px; width: 360px; }
+      dialog h3 { margin: 0 0 10px; font-size: 16px; }
+      dialog label { display: block; font-size: 12px; margin: 10px 0 4px; color: #a29a92; }
+      dialog input { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid #3a3532;
+        background: #1b1a19; color: #f2ede8; font-size: 14px; }
+      dialog .acc { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+      dialog .err { color: #ff8f8f; font-size: 12px; min-height: 16px; margin-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Órdenes de venta de esta caja</h1>
+    <p class="sub">
+      Todas las órdenes emitidas en el turno. Las facturas se ven en su propia pantalla;
+      ambas listas se suman en el cuadre de caja sin duplicar la venta ya facturada.
+    </p>
+
+    <div class="barra">
+      <button id="refrescar">Actualizar</button>
+      <button class="sec" onclick="window.costeaCaja.abrirPendientes()">Facturas pendientes</button>
+      
+      <button class="sec" onclick="window.costeaCaja.abrirPos()">Volver al punto de venta</button>
+      <span class="estado" id="estado">—</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Estado</th><th>Número</th><th>Fecha</th><th>Mesa / etiqueta</th>
+          <th>Forma de pago</th><th class="num">Total</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="filas"></tbody>
+      <tfoot>
+        <tr class="info"><td colspan="5">Ya facturado (se suma en Facturas, no aquí)</td><td class="num" id="facturado">$ 0.00</td><td></td></tr>
+        <tr><td colspan="5">TOTAL EN ÓRDENES PENDIENTES DE FACTURA</td><td class="num" id="total">$ 0.00</td><td></td></tr>
+      </tfoot>
+    </table>
+    <div class="vacio" id="vacio" hidden>Esta caja aún no ha emitido órdenes en el turno.</div>
+
+    <dialog id="dlgAnular">
+      <h3>Anular orden <span id="dlgNumero"></span></h3>
+      <p style="font-size:12px;color:#a29a92;margin:0">
+        La orden no se borra: queda marcada como ANULADA en esta caja y en el sistema central.
+        Se imprime un comprobante de control interno.
+      </p>
+      <label for="motivo">Motivo de la anulación</label>
+      <input id="motivo" placeholder="Ej: el cliente canceló el pedido" />
+      <label for="clave">Clave de administrador o superadministrador</label>
+      <input id="clave" type="password" autocomplete="current-password" />
+      <div class="err" id="errAnular"></div>
+      <div class="acc">
+        <button class="sec" id="cancelarAnular">Cancelar</button>
+        <button id="confirmarAnular">Anular orden</button>
+      </div>
+    </dialog>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const dinero = (n) => "$ " + (Number(n) || 0).toFixed(2);
+      const fecha = (v) => {
+        try {
+          return new Intl.DateTimeFormat("es-EC", {
+            dateStyle: "short", timeStyle: "short", timeZone: "America/Guayaquil",
+          }).format(new Date(v));
+        } catch { return v || "—"; }
+      };
+
+      async function cargar() {
+        try {
+          const docs = await window.costeaCaja.comprobantes();
+          const ordenes = docs.filter((d) => d.tipo === "orden");
+          $("filas").innerHTML = ordenes
+            .map((d) => {
+              const facturada = Boolean(d.docRelacionado);
+              const chip = d.anulado
+                ? '<span class="chip anu">ANULADA</span>'
+                : facturada
+                  ? '<span class="chip ok">Facturada</span>'
+                  : '<span class="chip pend">Orden</span>';
+              const accion = d.anulado || facturada
+                ? ""
+                : `<button class="mini" data-id="${d.id}" data-num="${d.docNumber || ""}">Anular orden</button>`;
+              return `<tr class="${d.anulado ? "anulada" : ""}">
+                <td>${chip}</td>
+                <td><strong>${d.docNumber || "—"}</strong></td>
+                <td>${fecha(d.fechaEmision)}</td>
+                <td>${d.mesa || "—"}${d.anulado ? `<br /><small>Motivo: ${d.motivoAnulacion || ""}</small>` : ""}</td>
+                <td>${d.formaPago || "efectivo"}</td>
+                <td class="num">${dinero(d.total)}</td>
+                <td>${accion}</td>
+              </tr>`;
+            })
+            .join("");
+          $("vacio").hidden = ordenes.length > 0;
+          for (const b of document.querySelectorAll("button.mini")) b.onclick = () => pedirAnulacion(b.dataset.id, b.dataset.num);
+          // El dinero de una orden ya facturada se cuenta en la pantalla de
+          // Facturas: aquí solo se suma lo que sigue siendo únicamente orden.
+          const vigentes = ordenes.filter((d) => !d.anulado);
+          const total = vigentes
+            .filter((d) => !d.docRelacionado)
+            .reduce((s, d) => s + (Number(d.total) || 0), 0);
+          const facturado = vigentes
+            .filter((d) => Boolean(d.docRelacionado))
+            .reduce((s, d) => s + (Number(d.total) || 0), 0);
+          $("total").textContent = dinero(total);
+          $("facturado").textContent = dinero(facturado);
+          $("estado").textContent = `${ordenes.length} orden(es) registradas en esta caja`;
+        } catch (e) {
+          $("estado").textContent = String(e.message || e);
+        }
+      }
+
+      let ordenActual = null;
+      function pedirAnulacion(id, numero) {
+        ordenActual = id;
+        $("dlgNumero").textContent = numero || "";
+        $("motivo").value = "";
+        $("clave").value = "";
+        $("errAnular").textContent = "";
+        $("dlgAnular").showModal();
+      }
+
+      $("cancelarAnular").onclick = () => $("dlgAnular").close();
+      $("confirmarAnular").onclick = async () => {
+        const motivo = $("motivo").value.trim();
+        const clave = $("clave").value;
+        if (motivo.length < 5) return ($("errAnular").textContent = "Escriba el motivo (mínimo 5 caracteres)");
+        if (!clave) return ($("errAnular").textContent = "Ingrese la clave de administrador");
+        $("confirmarAnular").disabled = true;
+        try {
+          await window.costeaCaja.anularOrden(ordenActual, motivo, clave);
+          $("dlgAnular").close();
+          await cargar();
+        } catch (e) {
+          $("errAnular").textContent = String(e.message || e);
+        } finally {
+          $("confirmarAnular").disabled = false;
+        }
+      };
+
+      $("refrescar").onclick = cargar;
+      cargar();
+      setInterval(cargar, 15000);
+    </script>
+  </body>
+</html>

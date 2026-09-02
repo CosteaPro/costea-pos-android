@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS public.orders_doc_number_key;

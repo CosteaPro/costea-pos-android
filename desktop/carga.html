@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Costea POS Caja</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #1b1a19;
+        color: #f5f1ee;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        border: 1px solid #2c2926;
+        overflow: hidden;
+      }
+      .caja { text-align: center; }
+      img { width: 132px; height: 132px; border-radius: 26px; }
+      h1 { font-size: 19px; margin: 16px 0 4px; letter-spacing: .3px; }
+      p { margin: 0; font-size: 12px; color: #a49b93; }
+      .barra { margin: 18px auto 0; width: 190px; height: 4px; border-radius: 4px; background: #2c2926; overflow: hidden; }
+      .barra span { display: block; height: 100%; width: 40%; background: #e85d3a; animation: correr 1.1s infinite ease-in-out; }
+      @keyframes correr { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+    </style>
+  </head>
+  <body>
+    <div class="caja">
+      <img src="build/icon.png" alt="Costea POS" />
+      <h1>Costea POS Caja</h1>
+      <p>Iniciando la caja…</p>
+      <div class="barra"><span></span></div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.set_recipe_code() FROM PUBLIC, anon, authenticated;

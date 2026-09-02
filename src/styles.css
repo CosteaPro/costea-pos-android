@@ -1,0 +1,301 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Sistema de diseño — POS "Carbón y brasa"
+ * Base carbón oscuro + acento brasa. Todos los colores en oklch.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-reserved: var(--reserved);
+  --color-reserved-foreground: var(--reserved-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-product-name: var(--product-name);
+  --color-product-bar: var(--product-bar);
+  --color-product-price: var(--product-price);
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --shadow-ember: 0 18px 40px -22px color-mix(in oklab, var(--primary) 70%, transparent);
+  --shadow-panel: 0 20px 50px -30px oklch(0 0 0 / 0.9);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.18 0.004 60);
+  --foreground: oklch(0.96 0.005 80);
+  --surface: oklch(0.22 0.005 60);
+  --surface-2: oklch(0.26 0.006 60);
+  --card: oklch(0.22 0.005 60);
+  --card-foreground: oklch(0.96 0.005 80);
+  --popover: oklch(0.22 0.005 60);
+  --popover-foreground: oklch(0.96 0.005 80);
+  --primary: oklch(0.66 0.128 44);
+  --primary-foreground: oklch(0.17 0.01 40);
+  --secondary: oklch(0.3 0.006 60);
+  --secondary-foreground: oklch(0.95 0.005 80);
+  --muted: oklch(0.27 0.005 60);
+  --muted-foreground: oklch(0.7 0.008 70);
+  --accent: oklch(0.3 0.02 45);
+  --accent-foreground: oklch(0.96 0.005 80);
+  --destructive: oklch(0.58 0.2 25);
+  --destructive-foreground: oklch(0.98 0.005 80);
+  --success: oklch(0.68 0.14 155);
+  --success-foreground: oklch(0.18 0.02 155);
+  --warning: oklch(0.79 0.14 80);
+  --warning-foreground: oklch(0.2 0.02 80);
+  --reserved: oklch(0.66 0.16 305);
+  --reserved-foreground: oklch(0.98 0.005 305);
+  --border: oklch(0.32 0.005 60);
+  --input: oklch(0.32 0.005 60);
+  --ring: oklch(0.66 0.128 44);
+  --chart-1: oklch(0.66 0.128 44);
+  --chart-2: oklch(0.79 0.14 80);
+  --chart-3: oklch(0.68 0.14 155);
+  --chart-4: oklch(0.62 0.1 250);
+  --chart-5: oklch(0.7 0.09 20);
+  --product-name: #ffffff;
+  /* Pie de la tarjeta de producto: bloque negro sólido (nombre) + bloque naranja (precio),
+     el mismo naranja medio rojizo de las pestañas de categorías. */
+  --product-bar: #000000;
+  --product-price: #e85d3a;
+}
+
+/*
+ * Paleta del Módulo administrativo Costea Pro: claro, minimalista y ejecutivo.
+ * Fondo #F4F6F8, tarjetas blancas, marca turquesa #14B8A6, barra lateral #334155.
+ */
+.admin-theme {
+  --background: #f4f6f8;
+  --foreground: #1e293b;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --popover: #ffffff;
+  --popover-foreground: #1e293b;
+  --primary: #14b8a6;
+  --primary-foreground: #ffffff;
+  --secondary: #eef2f5;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #e6faf7;
+  --accent-foreground: #0f766e;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #14b8a6;
+  --radius: 0.75rem;
+  --sidebar-bg: #334155;
+  --sidebar-fg: #e2e8f0;
+  --sidebar-muted: #94a3b8;
+  --sidebar-border: #475569;
+  --chart-1: #14b8a6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #64748b;
+  color-scheme: light;
+}
+
+/* Panel de resumen de pedido en el POS: fondo blanco con texto oscuro
+   para resaltar la cuenta sin alterar el tema oscuro del resto. */
+.light-panel {
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #111827;
+  --muted: #f3f4f6;
+  --muted-foreground: #111827;
+  --accent: #fff7ed;
+  --accent-foreground: #7c2d12;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #d1d5db;
+  --input: #d1d5db;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  color-scheme: light;
+}
+
+/* Todo el texto del panel de pedido en negro y negrita; solo el total y los botones llevan color. */
+.light-panel,
+.light-panel :where(h1, h2, h3, p, span, label, button, input, textarea, div) {
+  font-weight: 700;
+}
+.light-panel :where(p, span, label, div, h1, h2, h3, input, textarea) {
+  color: #0b0b0c;
+}
+.light-panel :where(input, textarea)::placeholder {
+  color: #1f2937;
+  font-weight: 600;
+  opacity: 1;
+}
+.light-panel .text-muted-foreground {
+  color: #0b0b0c;
+}
+.light-panel .text-primary,
+.light-panel :where(.text-primary) span {
+  color: var(--primary);
+}
+.light-panel .text-destructive {
+  color: var(--destructive);
+}
+
+/* Botones destacados del panel de pedido */
+.panel-btn-orange,
+.panel-btn-orange:hover,
+.light-panel .panel-btn-orange :where(span, svg) {
+  color: #ffffff;
+}
+.panel-btn-orange {
+  background-color: #f2560d;
+}
+.panel-btn-orange:hover {
+  background-color: #d84a08;
+}
+.panel-btn-dark,
+.panel-btn-dark:hover,
+.light-panel .panel-btn-dark :where(span, svg) {
+  color: #ffffff;
+}
+.panel-btn-dark {
+  background-color: #1f2937;
+}
+.panel-btn-dark:hover {
+  background-color: #111827;
+}
+
+/* Diálogo de cobro: texto negro sólido y grueso para máxima legibilidad. */
+.checkout-panel,
+.checkout-panel :where(h1, h2, h3, p, span, label, button, input, textarea, div, select, li) {
+  color: #000000;
+  font-weight: 700;
+}
+.checkout-panel :where(input, textarea, select)::placeholder {
+  color: #374151;
+  font-weight: 600;
+  opacity: 1;
+}
+.checkout-panel .text-muted-foreground {
+  color: #111827;
+}
+.checkout-panel .text-primary {
+  color: var(--primary);
+}
+.checkout-panel .text-destructive {
+  color: var(--destructive);
+}
+/* Tipo de comprobante: claro con borde suave; seleccionado en naranja medio rojizo. */
+.checkout-panel .checkout-doc-active,
+.checkout-panel .checkout-doc-active :where(p, span, svg) {
+  background-color: #e85d3a;
+  border-color: #e85d3a;
+  color: #ffffff;
+}
+.checkout-panel .checkout-doc-active :where(p, span) {
+  background-color: transparent;
+}
+/* Fila del total: resaltada en el mismo naranja. */
+.checkout-panel .checkout-total-row :where(span) {
+  color: #e85d3a;
+}
+
+@theme inline {
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-fg: var(--sidebar-fg);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-border: var(--sidebar-border);
+}
+
+/* Tablas del módulo administrativo: filas alternadas y bordes suaves. */
+.admin-theme table tbody tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility panel {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
