@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -29,15 +29,19 @@ jobs:
       - name: Build web app
         run: npm run build
 
+      - name: List mobile folder
+        run: ls -la mobile/
+
       - name: Build Android APK
-        uses: apache/cordova-action@v3
-        with:
-          command: build
-          platform: android
-          args: --release --buildConfig=build.json
+        working-directory: ./mobile
+        run: |
+          chmod +x ./build-apk.sh
+          ./build-apk.sh
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: costea-pos-android
-          path: platforms/android/app/build/outputs/apk/release/*.apk
+          path: |
+            mobile/*.apk
+            platforms/android/app/build/outputs/apk/release/*.apk
